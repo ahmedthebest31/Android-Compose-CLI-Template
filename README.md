@@ -57,4 +57,27 @@ Copy code
 - app/src/main/java/com/ahmedsamy/app/ui/theme: Material3 Theme definitions.
 - gradle/libs.versions.toml: Centralized dependency management.
 
+
+## ⚙️ Configuration
+You can configure the essential project details without touching Kotlin code. Open `gradle.properties` and edit:
+
+```properties
+APP_ID=com.yourcompany.project
+VERSION_CODE=1
+VERSION_NAME=1.0.0
+```
+
+
+## 🔐 Secure Signing (Release)
+
+To sign your APK for release securely:
+
+1. Copy the example file:
+   `cp keystore.properties.example keystore.properties`
+2. Open `keystore.properties` and add your real keystore details (passwords, alias, path).
+3. The build script will automatically detect this file and sign the release APK.
+
+*Note: `keystore.properties` is strictly ignored by Git to protect your secrets.*
+
+
 Built with ❤️ for the Open Source Community.

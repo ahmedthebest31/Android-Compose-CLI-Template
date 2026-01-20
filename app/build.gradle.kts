@@ -18,27 +18,32 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.ahmedsamy.app"
+        applicationId = providers.gradleProperty("APP_ID").get()
         
         minSdk = 26
         targetSdk = 36
         
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = providers.gradleProperty("VERSION_CODE").get().toInt()
+        versionName = providers.gradleProperty("VERSION_NAME").get()
+        
+        resValue("string", "app_name", providers.gradleProperty("APP_NAME").get())
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // signingConfigs {
-    //     // TODO: Add your signing configuration here for release builds.
-    //     // Example:
-    //     // create("release") {
-    //     //     storeFile = file("your.keystore")
-    //     //     storePassword = "your_password"
-    //     //     keyAlias = "your_key_alias"
-    //     //     keyPassword = "your_key_password"
-    //     // }
-    // }
+    signingConfigs {
+        create("release") {
+            val keystoreFile = rootProject.file("keystore.properties")
+            if (keystoreFile.exists()) {
+                val props = Properties()
+                props.load(keystoreFile.inputStream())
+                storeFile = rootProject.file(props.getProperty("storeFile"))
+                storePassword = props.getProperty("storePassword")
+                keyAlias = props.getProperty("keyAlias")
+                keyPassword = props.getProperty("keyPassword")
+            }
+        }
+    }
 
     buildTypes {
         getByName("debug") {
@@ -60,7 +65,11 @@ android {
                 "proguard-rules.pro"
             )
             isDebuggable = false
-            // signingConfig = signingConfigs.getByName("release")
+            
+            val keystoreFile = rootProject.file("keystore.properties")
+            if (keystoreFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
