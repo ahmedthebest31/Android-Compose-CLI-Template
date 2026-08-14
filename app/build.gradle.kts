@@ -1,47 +1,49 @@
-import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import java.util.Properties
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
 }
+
+// ============================================================
+// dependenciesInfo: ALWAYS disabled (privacy / store compliance).
+// ============================================================
+// The default (includeInApk = true) embeds a Google-encrypted
+// DEPENDENCY_INFO_BLOCK blob into the APK signing block.
+// IzzyOnDroid / F-Droid flag this blob during APK scans and
+// require it to be absent. Google Play does NOT need it either.
+// Setting both to false removes the blob and satisfies both stores.
+// See: https://izzyondroid.org/docs/general/AppInclusionPolicy/
 
 android {
     namespace = "com.ahmedsamy.app"
     compileSdk = 36
 
-    dependenciesInfo {
-        // Privacy: Disable dependency metadata for IzzyOnDroid compliance
-        includeInApk = false
-        includeInBundle = false
-    }
-
     defaultConfig {
         applicationId = providers.gradleProperty("APP_ID").get()
-        
         minSdk = 26
         targetSdk = 36
-        
         versionCode = providers.gradleProperty("VERSION_CODE").get().toInt()
         versionName = providers.gradleProperty("VERSION_NAME").get()
-        
+
         resValue("string", "app_name", providers.gradleProperty("APP_NAME").get())
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
-        create("release") {
-            val keystoreFile = rootProject.file("keystore.properties")
-            if (keystoreFile.exists()) {
-                val props = Properties()
-                props.load(keystoreFile.inputStream())
-                storeFile = rootProject.file(props.getProperty("storeFile"))
-                storePassword = props.getProperty("storePassword")
-                keyAlias = props.getProperty("keyAlias")
-                keyPassword = props.getProperty("keyPassword")
+        val props = Properties()
+        val signingFile = File(rootDir, "signing.properties")
+        if (signingFile.exists()) {
+            signingFile.inputStream().use { props.load(it) }
+            create("release") {
+                storeFile = file(props.getProperty("release.store.file"))
+                storePassword = props.getProperty("release.store.password")
+                keyAlias = props.getProperty("release.key.alias")
+                keyPassword = props.getProperty("release.key.password")
             }
+        } else {
+            println("NOTE: signing.properties not found. See signing.properties.example for setup. Building unsigned APK.")
         }
     }
 
@@ -56,24 +58,30 @@ android {
         }
 
         getByName("release") {
-            // Optimize APK size (~2MB) using R8
+            // Optimize APK size using R8
             isMinifyEnabled = true
             isShrinkResources = true
-            
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
             isDebuggable = false
-            
-            val keystoreFile = rootProject.file("keystore.properties")
-            if (keystoreFile.exists()) {
+
+            val signingFile = File(rootDir, "signing.properties")
+            if (signingFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
+            } else {
+                signingConfig = null
+            }
+
+            // ALWAYS disabled: removes the Google-encrypted DEPENDENCY_INFO_BLOCK
+            // blob from the APK signing block. Required by IzzyOnDroid, safe for Google Play.
+            dependenciesInfo {
+                includeInApk = false
+                includeInBundle = false
             }
         }
     }
-
-
 
     compileOptions {
         sourceCompatibility(JavaVersion.VERSION_21)
@@ -81,22 +89,27 @@ android {
     }
 
     kotlin { jvmToolchain(21) }
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        resValues = true
+    }
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.17.0")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.3.0")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+    implementation(libs.androidx.core.ktx)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 
     // Jetpack Compose
-    val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
+    val composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.activity:activity-compose:1.12.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
-    
-    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
+    debugImplementation(libs.androidx.compose.ui.tooling)
 }

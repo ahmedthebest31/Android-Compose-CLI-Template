@@ -1,13 +1,11 @@
 # Gradle files
 .gradle/
 build/
+.kotlin/
 
-# Local configuration file (sdk path, etc)
+# Local configuration file (sdk path, signing, etc)
 local.properties
 signing.properties
-
-# Log/OS Files
-*.log
 
 # Android Studio generated files and folders
 captures/
@@ -33,12 +31,12 @@ google-services.json
 *.jks
 *.keystore
 key.properties
-keystore.properties
 
+# AI-generated tracking files (not pushed)
+PROGRESS_TRACKER.md
+project_analysis_report.md
 
-
-# my personal files 
-*.ps1 
-*.py
-commit_msg.txt
-AUDIT_AND_MIGRATION_PLAN.md
+# Log/OS Files
+*.log
+build_log.txt
+ai_changes.md

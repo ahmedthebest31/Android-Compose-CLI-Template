@@ -27,3 +27,15 @@ val DividerMedium = Color(0xFF333333)
 
 // Status colors
 val StatusPaused = Color(0xFFAAAAAA)
+
+// Light theme palette
+val LightTerminalGreen = Color(0xFF007A00)
+val LightTerminalBackground = Color(0xFFFFFFFF)
+val LightTerminalCardBackground = Color(0xFFF2F2F2)
+val LightTerminalBorder = Color(0xFF007A00)
+val LightTextPrimary = Color(0xFF1A1A1A)
+val LightTextSecondary = Color(0xFF555555)
+val LightButtonActive = Color(0xFF4CAF50)
+val LightButtonInactive = Color(0xFFE0E0E0)
+val LightButtonSecondary = Color(0xFFDDDDDD)
+val LightDividerMedium = Color(0xFFCCCCCC)
